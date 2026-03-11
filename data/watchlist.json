@@ -1,0 +1,24 @@
+{
+  "updated_at": "2026-03-11",
+  "description": "실전 매매 종목 — 매매패턴.txt 기반",
+  "strategy": "KOSPI/코스닥 ETF 레버리지 롱숏 단타",
+  "watchlist": {
+    "primary": [
+      {"name": "KODEX 200선물인버스2X", "code": "252670", "category": "KOSPI200 인버스2X", "notes": "주력 종목 — 고물량 숏 포지션"}
+    ],
+    "active": [
+      {"name": "KODEX 코스닥150레버리지", "code": "233740", "category": "코스닥150 레버리지", "notes": "코스닥 롱 스캘핑"},
+      {"name": "KODEX 코스닥150선물인버스", "code": "251340", "category": "코스닥150 인버스", "notes": "코스닥 숏"},
+      {"name": "KODEX 레버리지", "code": "122630", "category": "KOSPI200 레버리지", "notes": "KOSPI 롱 시 사용"}
+    ],
+    "watch_only": [
+      {"name": "KODEX 반도체레버리지", "code": "091170", "category": "반도체 레버리지"},
+      {"name": "TIGER 반도체TOP10레버리지", "code": "396520", "category": "반도체 레버리지"},
+      {"name": "KODEX 방산TOP10레버리지", "code": "472170", "category": "방산 레버리지"},
+      {"name": "삼성 인버스2X 코스닥150 선물 ETN", "code": "530031", "category": "코스닥150 인버스2X ETN"},
+      {"name": "KODEX 반도체", "code": "091160", "category": "반도체"},
+      {"name": "KODEX 코스닥150", "code": "229200", "category": "코스닥150"},
+      {"name": "KODEX 방산TOP10", "code": "472160", "category": "방산"}
+    ]
+  }
+}

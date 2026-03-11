@@ -1,0 +1,58 @@
+# Application Configuration
+app:
+  name: kospi-corr-backtest
+  version: 0.1.0
+  log_level: INFO
+  log_format: json
+
+database:
+  path: data/market.db
+  journal_mode: WAL
+  synchronous: NORMAL
+  foreign_keys: true
+  busy_timeout_ms: 5000
+
+correlation:
+  methods:
+    - pearson
+    - spearman
+  rolling_windows: [5, 10, 20]
+  lead_lag:
+    max_lag: 5          # days
+    method: pearson
+    granger_max_lag: 5
+    granger_significance: 0.05
+  partial:
+    control_groups:
+      global_risk: [vix, dxy, sp500]
+      domestic: [usd_krw, vkospi, kospi200_futures_basis]
+  min_periods: 20
+  cache_ttl_days:
+    static: 1     # pearson/spearman
+    rolling: 1
+    lead_lag: 2
+    partial: 7
+
+backtest:
+  default_capital: 100_000_000   # 1억 KRW
+  position_budget_ratio: 0.1     # 10% per position
+  slippage_bps: 10               # 10bp slippage
+  commission_bps: 3              # 3bp commission (HTS typical)
+  hold_cost_bps: 0               # no financing for day trade
+  max_signal_depth: 3            # max indicators per combination
+  min_signal_observations: 20
+  allow_short: true
+
+data:
+  lookback_days: 90              # default fetch window
+  min_lookback_days: 40          # absolute minimum for 20-day rolling
+  timezone: Asia/Seoul
+  krx_open: "09:00"
+  krx_close: "15:30"
+
+visualization:
+  output_dir: output/
+  dpi: 150
+  figsize: [16, 12]
+  heatmap_cmap: RdBu_r
+  font_family: Malgun Gothic    # Korean font support

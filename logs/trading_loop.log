@@ -1,0 +1,2 @@
+23:08:33 [INFO] trading_loop: PatternMatcher initialized
+23:08:33 [INFO] trading_loop: Trading loop started: signal=5min, report=30min, poll=15s

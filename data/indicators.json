@@ -1,0 +1,40 @@
+{
+  "updated_at": "2026-03-11",
+  "description": "단타 시그널 핵심 지표 목록 (상관관계 분석 대상)",
+  "priority_indicators": {
+    "tier1_핵심": [
+      {"name": "WTI 원유", "ticker": "CL=F", "source": "yfinance", "note": "유가 - 사용자가 가장 높은 상관계수로 지목"},
+      {"name": "USD/KRW 환율", "ticker": "KRW=X", "source": "yfinance", "note": "환율 - 핵심 지표"},
+      {"name": "외국인 KOSPI200 선물 순매수", "source": "KRX/KIS", "note": "방향성 최강 시그널"}
+    ],
+    "tier2_중요": [
+      {"name": "Brent 원유", "ticker": "BZ=F", "source": "yfinance"},
+      {"name": "KOSPI200 선물 베이시스", "source": "KRX", "note": "콘탱고/백워데이션"},
+      {"name": "프로그램매매 순매수", "source": "KRX/네이버"},
+      {"name": "외국인 옵션 PCR", "source": "KRX"},
+      {"name": "기관 순매수", "source": "KRX"},
+      {"name": "개인 순매수", "source": "KRX", "note": "역지표"}
+    ],
+    "tier3_보조": [
+      {"name": "S&P 500", "ticker": "^GSPC", "source": "yfinance", "note": "전일 미국장"},
+      {"name": "NASDAQ", "ticker": "^IXIC", "source": "yfinance"},
+      {"name": "VIX", "ticker": "^VIX", "source": "yfinance"},
+      {"name": "VKOSPI", "source": "KRX"},
+      {"name": "DXY 달러인덱스", "ticker": "DX-Y.NYB", "source": "yfinance"},
+      {"name": "Nikkei 225", "ticker": "^N225", "source": "yfinance"},
+      {"name": "Shanghai Composite", "ticker": "000001.SS", "source": "yfinance"}
+    ]
+  },
+  "news_keywords": {
+    "geopolitical": ["이란", "트럼프", "미국", "전쟁", "제재", "관세"],
+    "oil_related": ["유가", "원유", "OPEC", "감산", "증산", "셰일"],
+    "market_critical": ["금리", "연준", "Fed", "반도체", "수출규제", "환율"],
+    "sources": ["연합뉴스 RSS", "한경 RSS", "매경 RSS", "네이버 뉴스 API"]
+  },
+  "correlation_config": {
+    "backtest_period": "1-2 months (20-40 trading days)",
+    "methods": ["pearson", "spearman", "rolling_20d"],
+    "lead_lag_check": true,
+    "note": "유가와 환율이 최우선 상관관계 분석 대상"
+  }
+}

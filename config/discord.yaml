@@ -1,0 +1,14 @@
+# Discord Notification Configuration
+discord:
+  enabled: true
+  provider: bot       # webhook or bot
+  # bot_token and channel_id loaded from .env / MCP env
+  alert_level: all    # all | important | critical
+  min_confidence: 0.0
+  send_neutral: false
+  timezone: Asia/Seoul
+  market_open: "09:00"
+  market_close: "15:30"
+  dry_run: false
+  http_timeout: 8.0
+  include_direction_hint: true

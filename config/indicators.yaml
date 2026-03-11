@@ -1,0 +1,179 @@
+# 15 Market Indicators Configuration
+# Each indicator maps to a data source with specific fetch parameters
+
+indicators:
+  # === Commodity ===
+  wti_crude:
+    display_name: "WTI Crude Oil"
+    category: commodity
+    source: fred
+    source_symbol: DCOILWTICO
+    frequency: daily
+    timezone: America/New_York
+    unit: USD/barrel
+    notes: "Cushing, OK WTI Spot Price FOB"
+
+  brent_crude:
+    display_name: "Brent Crude Oil"
+    category: commodity
+    source: fred
+    source_symbol: DCOILBRENTEU
+    frequency: daily
+    timezone: Europe/London
+    unit: USD/barrel
+    notes: "Europe Brent Spot Price FOB"
+
+  # === FX ===
+  usd_krw:
+    display_name: "USD/KRW Exchange Rate"
+    category: fx
+    source: pykrx
+    source_symbol: USD/KRW
+    fallback_source: fred
+    fallback_symbol: DEXKOUS
+    frequency: daily
+    timezone: Asia/Seoul
+    unit: KRW/USD
+
+  dxy:
+    display_name: "US Dollar Index (DXY)"
+    category: fx
+    source: fred
+    source_symbol: DTWEXBGS
+    frequency: daily
+    timezone: America/New_York
+    unit: index
+    notes: "Trade Weighted US Dollar Index: Broad, Goods and Services"
+
+  # === KRX Derivatives / Flow ===
+  kospi200_futures_basis:
+    display_name: "KOSPI200 Futures Basis"
+    category: krx_derivative
+    source: pykrx
+    source_symbol: KOSPI200_BASIS
+    frequency: daily
+    timezone: Asia/Seoul
+    unit: points
+    notes: "Near-month futures price minus KOSPI200 spot"
+
+  foreign_futures_net:
+    display_name: "Foreign Investor KOSPI200 Futures Net Position"
+    category: krx_flow
+    source: pykrx
+    source_symbol: FOREIGN_FUTURES_NET
+    frequency: daily
+    timezone: Asia/Seoul
+    unit: contracts
+
+  institutional_net:
+    display_name: "Institutional Net Buying"
+    category: krx_flow
+    source: pykrx
+    source_symbol: INSTITUTIONAL_NET
+    frequency: daily
+    timezone: Asia/Seoul
+    unit: KRW (million)
+
+  individual_net:
+    display_name: "Individual Net Buying"
+    category: krx_flow
+    source: pykrx
+    source_symbol: INDIVIDUAL_NET
+    frequency: daily
+    timezone: Asia/Seoul
+    unit: KRW (million)
+
+  program_trading_net:
+    display_name: "Program Trading Net"
+    category: krx_flow
+    source: pykrx
+    source_symbol: PROGRAM_NET
+    frequency: daily
+    timezone: Asia/Seoul
+    unit: KRW (million)
+
+  # === Global Indices (Overnight) ===
+  sp500:
+    display_name: "S&P 500"
+    category: global_index
+    source: fred
+    source_symbol: SP500
+    frequency: daily
+    timezone: America/New_York
+    unit: index
+    lag_days: 1  # KOSPI sees previous day's US close
+    notes: "Use T-1 close as KOSPI feature (US closes after KOSPI)"
+
+  nasdaq:
+    display_name: "NASDAQ Composite"
+    category: global_index
+    source: fred
+    source_symbol: NASDAQCOM
+    frequency: daily
+    timezone: America/New_York
+    unit: index
+    lag_days: 1
+
+  nikkei225:
+    display_name: "Nikkei 225"
+    category: global_index
+    source: fdr
+    source_symbol: "N225"
+    frequency: daily
+    timezone: Asia/Tokyo
+    unit: index
+    lag_days: 0  # Nikkei trades during overlapping hours
+
+  shanghai_composite:
+    display_name: "Shanghai Composite"
+    category: global_index
+    source: fdr
+    source_symbol: "SSEC"
+    frequency: daily
+    timezone: Asia/Shanghai
+    unit: index
+    lag_days: 0  # Shanghai overlaps with KOSPI hours
+
+  # === Volatility ===
+  vix:
+    display_name: "CBOE Volatility Index (VIX)"
+    category: volatility
+    source: fred
+    source_symbol: VIXCLS
+    frequency: daily
+    timezone: America/New_York
+    unit: percent
+    lag_days: 1
+
+  vkospi:
+    display_name: "VKOSPI"
+    category: volatility
+    source: pykrx
+    source_symbol: VKOSPI
+    frequency: daily
+    timezone: Asia/Seoul
+    unit: percent
+
+# Data source registry
+sources:
+  fred:
+    name: "Federal Reserve Economic Data"
+    base_url: "https://api.stlouisfed.org/fred"
+    api_key_env: FRED_API_KEY
+    rate_limit: 120/min
+
+  pykrx:
+    name: "KRX via pykrx"
+    base_url: null
+    rate_limit: 5/sec
+    notes: "Web scraping based; add delays between calls"
+
+  fdr:
+    name: "FinanceDataReader"
+    base_url: null
+    rate_limit: 10/sec
+
+  yfinance:
+    name: "Yahoo Finance (fallback)"
+    base_url: null
+    rate_limit: 2/sec

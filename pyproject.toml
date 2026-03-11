@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kospi-corr-backtest"
+version = "0.1.0"
+description = "KOSPI ETF correlation analysis and backtesting system"
+requires-python = ">=3.11"
+dependencies = [
+    # Data fetching
+    "pykrx>=1.2.0",
+    "finance-datareader>=0.9.80",
+    "fredapi>=0.5.2",
+    "yfinance>=0.2.30",
+    # Core analytics
+    "pandas>=2.1.0",
+    "numpy>=1.26.0",
+    "scipy>=1.11.0",
+    "statsmodels>=0.14.0",
+    "pingouin>=0.5.4",
+    # Storage
+    # sqlite3 is stdlib
+    "pyyaml>=6.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    # Visualization
+    "matplotlib>=3.8.0",
+    "seaborn>=0.13.0",
+    # CLI
+    "click>=8.1.0",
+    "rich>=13.0.0",
+    # Logging
+    "structlog>=24.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.3.0",
+    "mypy>=1.8.0",
+]
+
+[project.scripts]
+kospi-corr = "kospi_corr.cli.main:cli"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
