@@ -54,7 +54,7 @@ def fetch_investor_trend(target_date: date | None = None) -> dict:
     url = f"https://finance.naver.com/sise/investorDealTrendDay.naver?bizdate={date_str}&page=1"
 
     try:
-        resp = requests.get(url, headers=_HEADERS, timeout=10)
+        resp = requests.get(url, headers=_HEADERS, timeout=10, verify=False)
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "html.parser")
 
@@ -102,7 +102,7 @@ def fetch_investor_trend_multi(days: int = 5) -> list[dict]:
     url = f"https://finance.naver.com/sise/investorDealTrendDay.naver?bizdate={today.strftime('%Y%m%d')}&page={page}"
 
     try:
-        resp = requests.get(url, headers=_HEADERS, timeout=10)
+        resp = requests.get(url, headers=_HEADERS, timeout=10, verify=False)
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "html.parser")
 
@@ -225,7 +225,7 @@ def fetch_vkospi() -> dict:
     }
 
     try:
-        resp = requests.get(url, headers=headers, timeout=15)
+        resp = requests.get(url, headers=headers, timeout=15, verify=False)
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "html.parser")
 
