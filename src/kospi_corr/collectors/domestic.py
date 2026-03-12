@@ -144,17 +144,21 @@ def fetch_kospi200() -> dict:
         except Exception as e:
             logger.debug("KOSPI200 fast_info failed: %s", e)
 
-        # Fallback: history last row
-        if current is None:
-            try:
-                hist = ticker.history(period="5d")
-                if hist is not None and not hist.empty and "Close" in hist.columns:
-                    current = float(hist["Close"].iloc[-1])
-                    if len(hist) >= 2:
-                        prev_close = float(hist["Close"].iloc[-2])
-                    logger.info("KOSPI200 from history fallback: %.2f", current)
-            except Exception as e:
-                logger.debug("KOSPI200 history fallback failed: %s", e)
+        # Single history call for both fallback price and rolling stats
+        mean_ret = 0.0
+        std_ret = 1.0
+        hist = None
+        try:
+            hist = ticker.history(period="1mo")
+        except Exception as e:
+            logger.debug("KOSPI200 history fetch failed: %s", e)
+
+        # Fallback price from history if fast_info failed
+        if current is None and hist is not None and not hist.empty and "Close" in hist.columns:
+            current = float(hist["Close"].iloc[-1])
+            if len(hist) >= 2:
+                prev_close = float(hist["Close"].iloc[-2])
+            logger.info("KOSPI200 from history fallback: %.2f", current)
 
         if current is None:
             logger.warning("KOSPI200: could not retrieve current price")
@@ -165,20 +169,14 @@ def fetch_kospi200() -> dict:
         if prev_close and prev_close > 0:
             change_pct = (current - prev_close) / prev_close
 
-        # Compute 20-day rolling statistics for z-score normalization
-        mean_ret = 0.0
-        std_ret = 1.0
-        try:
-            hist_long = ticker.history(period="1mo")
-            if hist_long is not None and len(hist_long) >= 5:
-                returns = hist_long["Close"].pct_change().dropna()
-                if len(returns) >= 5:
-                    mean_ret = float(returns.mean())
-                    std_ret = float(returns.std())
-                    if std_ret < 1e-8:
-                        std_ret = 1.0
-        except Exception as e:
-            logger.debug("KOSPI200 rolling stats failed: %s", e)
+        # Compute 20-day rolling statistics from the same history
+        if hist is not None and len(hist) >= 5 and "Close" in hist.columns:
+            returns = hist["Close"].pct_change().dropna()
+            if len(returns) >= 5:
+                mean_ret = float(returns.mean())
+                std_ret = float(returns.std())
+                if std_ret < 1e-8:
+                    std_ret = 1.0
 
         result = {
             "current": float(current),

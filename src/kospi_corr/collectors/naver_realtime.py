@@ -19,20 +19,19 @@ logger = logging.getLogger(__name__)
 
 KST = timezone(timedelta(hours=9))
 
+_UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+)
+
 _HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-    ),
+    "User-Agent": _UA,
     "Referer": "https://finance.naver.com/",
 }
 
 # mainSummary API requires browser-like headers with XHR
 _SUMMARY_HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-    ),
+    "User-Agent": _UA,
     "Referer": "https://finance.naver.com/sise/sise_program.naver",
     "Accept": "application/json,text/plain,*/*",
     "X-Requested-With": "XMLHttpRequest",
@@ -259,12 +258,28 @@ def _parse_investor_flows(trend_list: list) -> list[InvestorFlowIntraday]:
 
 
 # ---------------------------------------------------------------------------
-# 3. Convenience: fetch program trading (with mainSummary fallback)
+# 3. Convenience wrappers (share a single cached fetch_main_summary call)
 # ---------------------------------------------------------------------------
+
+_summary_cache: tuple[float, NaverSummaryData | None] = (0.0, None)
+_SUMMARY_TTL = 10.0  # seconds
+
+
+def _get_cached_summary() -> NaverSummaryData | None:
+    """Return cached mainSummary if fresh, else re-fetch."""
+    global _summary_cache
+    import time
+    now = time.monotonic()
+    if now - _summary_cache[0] < _SUMMARY_TTL and _summary_cache[1] is not None:
+        return _summary_cache[1]
+    result = fetch_main_summary()
+    _summary_cache = (now, result)
+    return result
+
 
 def fetch_program_trading() -> ProgramTradingData:
     """Fetch program trading data, preferring mainSummary JSON API."""
-    summary = fetch_main_summary()
+    summary = _get_cached_summary()
     if summary is not None:
         return summary.program
     return ProgramTradingData()
@@ -272,7 +287,7 @@ def fetch_program_trading() -> ProgramTradingData:
 
 def fetch_investor_flow_intraday() -> InvestorFlowIntraday:
     """Fetch KOSPI investor flow, preferring mainSummary JSON API."""
-    summary = fetch_main_summary()
+    summary = _get_cached_summary()
     if summary is not None and summary.investor_flows:
         return summary.investor_flows[0]  # KOSPI
     return InvestorFlowIntraday()

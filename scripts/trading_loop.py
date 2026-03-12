@@ -248,6 +248,8 @@ _DISCORD_HEADERS = {
 
 
 def send_discord(content: str = "", embed: dict | None = None) -> bool:
+    if not content and not embed:
+        return False
     url = f"{API_BASE}/channels/{CHANNEL_ID}/messages"
     payload: dict = {}
     if content:
@@ -699,7 +701,6 @@ class TradingLoop:
 
         self.last_signal_time: float = 0
         self.last_report_time: float = 0
-        self.last_decision_time: float = 0
         self.last_direction: str | None = None
         self.last_result: SignalResult | None = None
         self.last_predictive: PredictiveResult | None = None
@@ -847,15 +848,18 @@ class TradingLoop:
     # ----- Report -----
 
     def _send_report(self):
-        """Generate comprehensive report via pipeline and send to Discord."""
+        """Send comprehensive report, reusing recent signal if fresh."""
         logger.info("Building comprehensive report...")
-        try:
-            result = self.pipeline.generate()
-        except Exception as e:
-            logger.error(f"Pipeline generate for report failed: {e}", exc_info=True)
-            return
-
-        self.last_result = result
+        # Reuse last_result if generated within 5 minutes
+        if self.last_result and (_time.time() - self.last_signal_time) < 300:
+            result = self.last_result
+        else:
+            try:
+                result = self.pipeline.generate()
+            except Exception as e:
+                logger.error(f"Pipeline generate for report failed: {e}", exc_info=True)
+                return
+            self.last_result = result
 
         embed = build_report_embed(result, self.positions.positions)
         if send_discord(embed=embed):
@@ -971,22 +975,23 @@ class TradingLoop:
 
     def _handle_decision_command(self):
         """Generate and send direct trading decision."""
-        # Always force a fresh signal for decision
-        self._send_signal()
-        if self.last_decision:
-            # Already sent during _send_signal, but send again standalone
-            # in case user specifically asked
-            pass
+        # Reuse recent result if fresh (< 2 min), otherwise regenerate
+        if self.last_decision and (_time.time() - self.last_signal_time) < 120:
+            embed = build_decision_embed(self.last_decision)
+            send_discord(embed=embed)
         else:
-            send_discord("판단 데이터 수집 중 — 시그널 몇 회 수집 후 재시도하세요.")
+            self._send_signal()  # generates decision as side effect
+            if not self.last_decision:
+                send_discord("판단 데이터 수집 중 — 시그널 몇 회 수집 후 재시도하세요.")
 
     def _handle_predict_command(self):
         """Send predictive analysis to Discord."""
-        if self.last_predictive and self.last_predictive.warmup_complete:
+        # Reuse if fresh (< 2 min), otherwise regenerate
+        if (self.last_predictive and self.last_predictive.warmup_complete
+                and (_time.time() - self.last_signal_time) < 120):
             embed = build_predictive_embed(self.last_predictive)
             send_discord(embed=embed)
         else:
-            # Force a signal generation first to seed the predictive engine
             self._send_signal()
             if self.last_predictive:
                 embed = build_predictive_embed(self.last_predictive)

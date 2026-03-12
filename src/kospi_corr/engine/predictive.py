@@ -212,11 +212,8 @@ class MomentumTracker:
         )
 
     @staticmethod
-    def _slope(series: list[tuple[datetime, float]], window_min: int) -> float:
-        if len(series) < 2:
-            return 0.0
-        cutoff = series[-1][0] - timedelta(minutes=window_min)
-        pts = [(t, v) for t, v in series if t >= cutoff]
+    def _ols_slope(pts: list[tuple[datetime, float]]) -> float:
+        """OLS slope from timestamped points (units per hour)."""
         if len(pts) < 2:
             return 0.0
         t0 = pts[0][0]
@@ -233,6 +230,14 @@ class MomentumTracker:
         return (n * sxy - sx * sy) / denom
 
     @staticmethod
+    def _slope(series: list[tuple[datetime, float]], window_min: int) -> float:
+        if len(series) < 2:
+            return 0.0
+        cutoff = series[-1][0] - timedelta(minutes=window_min)
+        pts = [(t, v) for t, v in series if t >= cutoff]
+        return MomentumTracker._ols_slope(pts)
+
+    @staticmethod
     def _slope_offset(
         series: list[tuple[datetime, float]],
         window_min: int,
@@ -243,20 +248,7 @@ class MomentumTracker:
         end = series[-1][0] - timedelta(minutes=offset_min)
         start = end - timedelta(minutes=window_min)
         pts = [(t, v) for t, v in series if start <= t <= end]
-        if len(pts) < 2:
-            return 0.0
-        t0 = pts[0][0]
-        xs = [(p[0] - t0).total_seconds() / 3600.0 for p in pts]
-        ys = [p[1] for p in pts]
-        n = len(xs)
-        sx = sum(xs)
-        sy = sum(ys)
-        sxy = sum(x * y for x, y in zip(xs, ys))
-        sxx = sum(x * x for x in xs)
-        denom = n * sxx - sx * sx
-        if abs(denom) < 1e-12:
-            return 0.0
-        return (n * sxy - sx * sy) / denom
+        return MomentumTracker._ols_slope(pts)
 
     @staticmethod
     def _trend_duration(series: list[tuple[datetime, float]]) -> float:
